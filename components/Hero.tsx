@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAudio } from './AudioProvider';
 
 const SplitText = ({ text, className = "" }: { text: string; className?: string }) => {
-  const characters = text.split("");
+  const words = text.split(" ");
   
   const container = {
     hidden: { opacity: 0 },
@@ -21,10 +21,19 @@ const SplitText = ({ text, className = "" }: { text: string; className?: string 
 
   return (
     <motion.span className={className} variants={container} initial="hidden" animate="visible">
-      {characters.map((char, index) => (
-        <motion.span key={index} variants={child} className="inline-block">
-          {char === " " ? "\u00A0" : char}
-        </motion.span>
+      {words.map((word, wordIndex) => (
+        <React.Fragment key={wordIndex}>
+          <span className="inline-block whitespace-nowrap">
+            {word.split("").map((char, charIndex) => (
+              <motion.span key={charIndex} variants={child} className="inline-block">
+                {char}
+              </motion.span>
+            ))}
+          </span>
+          {wordIndex < words.length - 1 && (
+            <span className="inline-block">&nbsp;</span>
+          )}
+        </React.Fragment>
       ))}
     </motion.span>
   );
@@ -51,7 +60,7 @@ export default function Hero() {
           />
         </motion.div>
         
-        <h1 className="font-display text-6xl md:text-8xl font-bold tracking-tight mb-4 text-white">
+        <h1 className="font-display text-[11.5vw] sm:text-6xl md:text-8xl font-bold tracking-tight mb-4 text-white">
           <SplitText text="Advait Sandeep Raut" />
         </h1>
         
