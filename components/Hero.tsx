@@ -15,7 +15,7 @@ const SplitText = ({ text, className = "" }: { text: string; className?: string 
   };
 
   const child = {
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.65, 0.3, 0.9] } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.65, 0.3, 0.9] as [number, number, number, number] } },
     hidden: { opacity: 0, y: 15 },
   };
 
