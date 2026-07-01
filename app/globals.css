@@ -32,3 +32,10 @@
     display: none;
   }
 }
+
+/* Hide native cursor on desktop when using CustomCursor */
+@media (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+}
