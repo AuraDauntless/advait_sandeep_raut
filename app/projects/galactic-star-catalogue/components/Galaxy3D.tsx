@@ -184,13 +184,22 @@ function PointsCloud({ onHoverChange }: { onHoverChange: (h: HoverInfo) => void 
     );
 }
 
+import { useInView } from 'framer-motion';
+
 export function Galaxy3D() {
     const [hover, setHover] = useState<HoverInfo>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const isInView = useInView(containerRef);
+    
     return (
         <div className="flex flex-col gap-4">
             <h2 className="text-2xl font-bold text-white tracking-wide">The Milky way</h2>
-            <div className="relative w-full h-[60vh] md:h-[75vh] bg-[#0b1220] rounded-[24px] overflow-hidden shadow-[0_0_15px_rgba(122,211,255,0.4)] border border-white/10">
-                <Canvas camera={{ position: [0, 30, 120], fov: 60 }} style={{ pointerEvents: 'auto' }}>
+            <div ref={containerRef} className="relative w-full h-[60vh] md:h-[75vh] bg-[#0b1220] rounded-[24px] overflow-hidden shadow-[0_0_15px_rgba(122,211,255,0.4)] border border-white/10">
+                <Canvas 
+                    frameloop={isInView ? 'always' : 'demand'}
+                    camera={{ position: [0, 30, 120], fov: 60 }} 
+                    style={{ pointerEvents: 'auto' }}
+                >
                     <ambientLight intensity={0.4} />
                     <PointsCloud onHoverChange={setHover} />
                     <OrbitControls enablePan enableZoom enableRotate autoRotate autoRotateSpeed={0.5} />

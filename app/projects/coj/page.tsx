@@ -46,9 +46,9 @@ export default function COJProject() {
           [&_strong]:text-honey-800 [&_strong]:font-semibold
           [&_code]:text-peach-900 [&_code]:bg-peach-50 [&_code]:px-2 [&_code]:py-1 [&_code]:rounded-md [&_code]:font-mono [&_code]:text-sm [&_code]:shadow-sm [&_code]:border [&_code]:border-peach-100
         ">
-          <h2>System Architecture</h2>
+          <h2>System Architecture & Engineering Challenges</h2>
           <p>
-            The COJ Order Management System is a serverless full-stack application built to handle invoice generation and state synchronization seamlessly.
+            The COJ Order Management System is a serverless full-stack application built to handle invoice generation and state synchronization seamlessly. Early iterations faced severe performance bottlenecks due to rapid, synchronous read/writes to Google Sheets. The architecture was specifically overhauled to minimize network latency and decouple frontend state from backend execution.
           </p>
 
           <h3>Frontend Specifications</h3>
@@ -58,22 +58,28 @@ export default function COJProject() {
             <li><strong>Authentication:</strong> OAuth flow handled via <code>@react-oauth/google</code>, managing secure access tokens.</li>
           </ul>
 
-          <h3>State Management</h3>
-          <p>State separation is maintained strictly through custom React Hooks to encapsulate logic away from presentation components:</p>
+          <h3>State Management & Asynchronous Desyncs</h3>
+          <p>
+            Managing state directly against a slow external database (Google Sheets API) initially caused UI stuttering and race conditions when multiple admins modified orders concurrently. State separation is now maintained strictly through custom React Hooks to encapsulate logic and enforce optimistic UI updates:
+          </p>
           <ul>
-            <li><code>useOrderForm</code>: Manages local complex form state, input debouncing, and custom Regex validation logic.</li>
-            <li><code>useAdminOrders</code>: Interfaces with the backend API, managing the global state and real-time administrative toggles.</li>
+            <li><code>useOrderForm</code>: Manages local complex form state, input debouncing, and custom Regex validation logic before ever touching the network layer.</li>
+            <li><code>useAdminOrders</code>: Interfaces with the backend API, managing global state and real-time administrative toggles. <strong>Crucially, it employs optimistic UI rendering</strong>—the UI updates instantly upon user interaction while the actual Google Apps Script fetch runs in the background, rolling back only on HTTP failure.</li>
           </ul>
 
           <h3>Serverless Backend</h3>
           <p>
-            The backend leverages <strong>Google Apps Script</strong> endpoints acting as a REST API. It interfaces directly with a Google Sheets database for real-time order tracking and persistent storage.
+            The backend leverages <strong>Google Apps Script</strong> endpoints acting as a REST API. It interfaces directly with a Google Sheets database. To circumvent GAS execution time limits and rate limiting, batch processing algorithms were written to read the entire sheet payload in a single HTTP request rather than querying row-by-row.
           </p>
 
-          <h3>Automated Invoicing</h3>
+          <h3>Automated Invoicing (Client-Side Rendering)</h3>
           <p>
-            PDF invoice generation is automated client-side using the <code>jspdf</code> library. Invoice data is mapped dynamically from the authenticated global state and rendered onto a standardized PDF buffer before triggering a localized download.
+            PDF invoice generation was intentionally shifted from the backend to the client-side using the <code>jspdf</code> library. Generating PDFs server-side via GAS proved too slow (often 5+ seconds). By offloading this to the client's browser:
           </p>
+          <ul>
+            <li>Invoice data is mapped dynamically from the authenticated global state and rendered onto a standardized PDF buffer directly in-memory.</li>
+            <li>The operation went from a 5-second blocking network request to a sub-100ms client-side render, instantly triggering a localized Blob download.</li>
+          </ul>
         </article>
 
       </main>

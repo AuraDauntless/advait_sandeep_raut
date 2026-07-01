@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef, useEffect } from 'react';
+import { useInView } from 'framer-motion';
 
 export interface ParticlesProps {
   particleColors?: string[];
@@ -11,6 +12,98 @@ export interface ParticlesProps {
   alphaParticles?: boolean;
   disableRotation?: boolean;
   pixelRatio?: number;
+}
+
+// Particle class definition separated from useEffect to allow persisting instances
+class Particle {
+  x: number;
+  y: number;
+  size: number;
+  baseX: number;
+  baseY: number;
+  density: number;
+  color: string;
+  angle: number;
+  spin: number;
+  speed: number;
+  particleSpread: number;
+  moveParticlesOnHover: boolean;
+  
+  constructor(w: number, h: number, particleBaseSize: number, speed: number, particleColors: string[], particleSpread: number, moveParticlesOnHover: boolean) {
+    this.x = Math.random() * w;
+    this.y = Math.random() * h;
+    this.baseX = this.x;
+    this.baseY = this.y;
+    this.size = (Math.random() * (particleBaseSize * 0.03)) + 0.5; 
+    this.density = (Math.random() * 30) + 1;
+    this.color = particleColors[Math.floor(Math.random() * particleColors.length)];
+    this.angle = Math.random() * 360;
+    this.spin = (Math.random() - 0.5) * speed * 5;
+    this.speed = speed;
+    this.particleSpread = particleSpread;
+    this.moveParticlesOnHover = moveParticlesOnHover;
+  }
+
+  draw(ctx: CanvasRenderingContext2D, alphaParticles: boolean, disableRotation: boolean) {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    if (!disableRotation) {
+      ctx.rotate((this.angle * Math.PI) / 180);
+    }
+    
+    ctx.fillStyle = this.color;
+    if (alphaParticles) {
+      ctx.globalAlpha = Math.random() * 0.5 + 0.1;
+    }
+    
+    ctx.beginPath();
+    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.restore();
+  }
+
+  update(w: number, h: number, mouseX: number, mouseY: number, mouseRadius: number) {
+    this.angle += this.spin;
+    
+    this.baseX += (Math.random() - 0.5) * this.speed * 2;
+    this.baseY += (Math.random() - 0.5) * this.speed * 2;
+    
+    if (this.baseX > w) this.baseX = 0;
+    if (this.baseX < 0) this.baseX = w;
+    if (this.baseY > h) this.baseY = 0;
+    if (this.baseY < 0) this.baseY = h;
+
+    if (this.moveParticlesOnHover) {
+      const dx = mouseX - this.x;
+      const dy = mouseY - this.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < mouseRadius) {
+        const forceDirectionX = dx / distance;
+        const forceDirectionY = dy / distance;
+        const force = (mouseRadius - distance) / mouseRadius;
+        const directionX = forceDirectionX * force * this.density;
+        const directionY = forceDirectionY * force * this.density;
+        
+        this.x -= directionX * (this.particleSpread * 0.05);
+        this.y -= directionY * (this.particleSpread * 0.05);
+      } else {
+        if (this.x !== this.baseX) {
+          const dx = this.x - this.baseX;
+          this.x -= dx / 20;
+        }
+        if (this.y !== this.baseY) {
+          const dy = this.y - this.baseY;
+          this.y -= dy / 20;
+        }
+      }
+    } else {
+        this.x = this.baseX;
+        this.y = this.baseY;
+    }
+  }
 }
 
 export default function Particles({
@@ -25,6 +118,8 @@ export default function Particles({
   pixelRatio = 1
 }: ParticlesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isInView = useInView(canvasRef);
+  const particlesRef = useRef<Particle[]>([]);
   
   // Track mouse for hover effect
   const mouseRef = useRef({ x: -1000, y: -1000, radius: 150 });
@@ -35,6 +130,8 @@ export default function Particles({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    if (!isInView) return; // Pause rendering loop if offscreen
+
     let w = window.innerWidth;
     let h = window.innerHeight;
     canvas.width = w * pixelRatio;
@@ -43,100 +140,10 @@ export default function Particles({
     canvas.style.height = `${h}px`;
     ctx.scale(pixelRatio, pixelRatio);
 
-    class Particle {
-      x: number;
-      y: number;
-      size: number;
-      baseX: number;
-      baseY: number;
-      density: number;
-      color: string;
-      angle: number;
-      spin: number;
-      
-      constructor() {
-        this.x = Math.random() * w;
-        this.y = Math.random() * h;
-        this.baseX = this.x;
-        this.baseY = this.y;
-        // Map particleBaseSize to actual physical radius
-        this.size = (Math.random() * (particleBaseSize * 0.03)) + 0.5; 
-        this.density = (Math.random() * 30) + 1;
-        this.color = particleColors[Math.floor(Math.random() * particleColors.length)];
-        this.angle = Math.random() * 360;
-        this.spin = (Math.random() - 0.5) * speed * 5;
+    if (particlesRef.current.length === 0) {
+      for (let i = 0; i < particleCount; i++) {
+        particlesRef.current.push(new Particle(w, h, particleBaseSize, speed, particleColors, particleSpread, moveParticlesOnHover));
       }
-
-      draw() {
-        if (!ctx) return;
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        if (!disableRotation) {
-          ctx.rotate((this.angle * Math.PI) / 180);
-        }
-        
-        ctx.fillStyle = this.color;
-        if (alphaParticles) {
-          ctx.globalAlpha = Math.random() * 0.5 + 0.1;
-        }
-        
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-        
-        ctx.restore();
-      }
-
-      update() {
-        this.angle += this.spin;
-        
-        // Ambient movement based on speed
-        this.baseX += (Math.random() - 0.5) * speed * 2;
-        this.baseY += (Math.random() - 0.5) * speed * 2;
-        
-        // Wrap around screen
-        if (this.baseX > w) this.baseX = 0;
-        if (this.baseX < 0) this.baseX = w;
-        if (this.baseY > h) this.baseY = 0;
-        if (this.baseY < 0) this.baseY = h;
-
-        if (moveParticlesOnHover) {
-          const dx = mouseRef.current.x - this.x;
-          const dy = mouseRef.current.y - this.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < mouseRef.current.radius) {
-            const forceDirectionX = dx / distance;
-            const forceDirectionY = dy / distance;
-            const force = (mouseRef.current.radius - distance) / mouseRef.current.radius;
-            const directionX = forceDirectionX * force * this.density;
-            const directionY = forceDirectionY * force * this.density;
-            
-            // Push away based on spread
-            this.x -= directionX * (particleSpread * 0.05);
-            this.y -= directionY * (particleSpread * 0.05);
-          } else {
-            // Return to base position softly
-            if (this.x !== this.baseX) {
-              const dx = this.x - this.baseX;
-              this.x -= dx / 20;
-            }
-            if (this.y !== this.baseY) {
-              const dy = this.y - this.baseY;
-              this.y -= dy / 20;
-            }
-          }
-        } else {
-            this.x = this.baseX;
-            this.y = this.baseY;
-        }
-      }
-    }
-
-    const particleArray: Particle[] = [];
-    for (let i = 0; i < particleCount; i++) {
-      particleArray.push(new Particle());
     }
 
     const handleResize = () => {
@@ -163,23 +170,24 @@ export default function Particles({
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseleave', handleMouseLeave);
 
+    let animId: number;
+
     const animate = () => {
       ctx.clearRect(0, 0, w, h);
-      for (let i = 0; i < particleArray.length; i++) {
-        particleArray[i].update();
-        particleArray[i].draw();
+      const pArray = particlesRef.current;
+      for (let i = 0; i < pArray.length; i++) {
+        pArray[i].update(w, h, mouseRef.current.x, mouseRef.current.y, mouseRef.current.radius);
+        pArray[i].draw(ctx, alphaParticles, disableRotation);
       }
       if (speed > 0 || moveParticlesOnHover) {
         animId = requestAnimationFrame(animate);
       }
     };
 
-    let animId: number;
     if (speed > 0 || moveParticlesOnHover) {
       animId = requestAnimationFrame(animate);
     } else {
-      // Draw once and stop
-      animate();
+      animate(); // Draw once
     }
 
     return () => {
@@ -188,7 +196,7 @@ export default function Particles({
       window.removeEventListener('mouseleave', handleMouseLeave);
       if (animId) cancelAnimationFrame(animId);
     };
-  }, [particleColors, particleCount, particleSpread, speed, particleBaseSize, moveParticlesOnHover, alphaParticles, disableRotation, pixelRatio]);
+  }, [isInView, particleColors, particleCount, particleSpread, speed, particleBaseSize, moveParticlesOnHover, alphaParticles, disableRotation, pixelRatio]);
 
   return (
     <canvas 

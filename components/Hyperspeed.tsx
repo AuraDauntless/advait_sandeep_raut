@@ -1,8 +1,11 @@
 "use client";
 import React, { useRef, useEffect } from 'react';
+import { useInView } from 'framer-motion';
 
 export default function Hyperspeed() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isInView = useInView(canvasRef);
+  const starsRef = useRef<{ x: number; y: number; z: number; o: number }[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -10,19 +13,21 @@ export default function Hyperspeed() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    if (!isInView) return; // Pause loop when offscreen
+
     let w = canvas.width = window.innerWidth;
     let h = canvas.height = window.innerHeight;
 
     const numStars = 500;
-    const stars: { x: number; y: number; z: number; o: number }[] = [];
-    
-    for (let i = 0; i < numStars; i++) {
-      stars.push({
-        x: Math.random() * w * 2 - w,
-        y: Math.random() * h * 2 - h,
-        z: Math.random() * w,
-        o: Math.random()
-      });
+    if (starsRef.current.length === 0) {
+      for (let i = 0; i < numStars; i++) {
+        starsRef.current.push({
+          x: Math.random() * w * 2 - w,
+          y: Math.random() * h * 2 - h,
+          z: Math.random() * w,
+          o: Math.random()
+        });
+      }
     }
 
     const centerX = w / 2;
@@ -35,11 +40,14 @@ export default function Hyperspeed() {
     };
     window.addEventListener('resize', handleResize);
 
+    let animId: number;
+
     const draw = () => {
       // Draw solid black background
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, w, h);
 
+      const stars = starsRef.current;
       for (let i = 0; i < numStars; i++) {
         const star = stars[i];
         
@@ -70,16 +78,16 @@ export default function Hyperspeed() {
           ctx.stroke();
         }
       }
-      requestAnimationFrame(draw);
+      animId = requestAnimationFrame(draw);
     };
 
-    const animId = requestAnimationFrame(draw);
+    animId = requestAnimationFrame(draw);
 
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [isInView]);
 
   return (
     <canvas 

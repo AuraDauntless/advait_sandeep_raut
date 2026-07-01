@@ -48,9 +48,9 @@ export default function GalacticProject() {
                 [&_strong]:text-white [&_strong]:font-bold
                 [&_code]:text-[#7ad3ff] [&_code]:bg-[#0b1220] [&_code]:px-2 [&_code]:py-1 [&_code]:rounded-md [&_code]:font-mono [&_code]:text-sm
               ">
-              <h2>Technical Specifications</h2>
+              <h2>Technical Specifications & Engineering Depth</h2>
               <p>
-                The Galactic Star Catalogue is a client-side data visualization engine optimized for WebGL context rendering.
+                The Galactic Star Catalogue is a client-side data visualization engine optimized for WebGL context rendering. It processes and visualizes hundreds of thousands of celestial data points within a standard browser environment.
               </p>
 
               <h3>Core Stack</h3>
@@ -69,6 +69,16 @@ export default function GalacticProject() {
               <ul>
                 <li><strong>HR Diagram:</strong> Scatter plot implementation utilizing Recharts to map stellar temperature against luminosity.</li>
                 <li><strong>Filtering Engine:</strong> A multi-parameter, debounced filtering engine isolates specific stellar classifications. The active filter state is persisted across sessions utilizing the browser's <code>localStorage</code> API.</li>
+              </ul>
+              
+              <h3>Engineering Challenges: Maintaining 60 FPS</h3>
+              <p>
+                Rendering 100,000+ geometric objects in a browser inherently creates a CPU bottleneck. To solve this:
+              </p>
+              <ul>
+                <li><strong>Instanced Meshes & Point Clouds:</strong> Instead of rendering individual <code>&lt;mesh&gt;</code> components for every star, the architecture utilizes <code>&lt;points&gt;</code> and <code>BufferGeometry</code>. All stars are passed into the GPU as a single array of typed float buffers (Float32Array) for positions and colors.</li>
+                <li><strong>Luminosity Bucketing:</strong> Stars are grouped into "buckets" based on their absolute magnitude. This allows us to apply larger point sizes and different <code>AdditiveBlending</code> opacities to brighter stars without calculating complex shader math for every single point.</li>
+                <li><strong>Intersection Observers:</strong> The WebGL render loop is bound to an Intersection Observer (<code>frameloop="demand"</code>), meaning the GPU stops working entirely the moment the user scrolls down to read the case study, preserving battery life and system resources.</li>
               </ul>
             </article>
 
