@@ -8,6 +8,7 @@ import EngineeringGrid from '@/components/EngineeringGrid';
 import LifeAtBits from '@/components/LifeAtBits';
 import Footer from '@/components/Footer';
 import Hyperspeed from '@/components/Hyperspeed';
+import ReactionDotMinigame from '@/components/ReactionDotMinigame';
 
 
 export default function Home() {
@@ -48,6 +49,16 @@ export default function Home() {
         <ExperienceTimeline />
         <LifeAtBits />
         <EngineeringGrid />
+        
+        {/* Minigame Section */}
+        <section className="py-20 px-4 relative z-10 border-t border-white/5">
+          <div className="max-w-4xl mx-auto mb-12 text-center">
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">Systems Check</h2>
+            <p className="text-gray-400 max-w-xl mx-auto">Verify reaction times and hand-eye coordination before proceeding.</p>
+          </div>
+          <ReactionDotMinigame />
+        </section>
+
         <Footer />
       </div>
     </main>
