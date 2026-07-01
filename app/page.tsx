@@ -13,6 +13,7 @@ import ReactionDotMinigame from '@/components/ReactionDotMinigame';
 
 export default function Home() {
   const containerRef = useRef(null);
+  const [showMinigame, setShowMinigame] = useState(false);
   const { scrollYProgress, scrollY } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
   
@@ -54,9 +55,25 @@ export default function Home() {
         <section className="py-20 px-4 relative z-10 border-t border-white/5">
           <div className="max-w-4xl mx-auto mb-12 text-center">
             <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">Systems Check</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">Verify reaction times and hand-eye coordination before proceeding.</p>
+            <p className="text-gray-400 max-w-xl mx-auto mb-8">Verify reaction times and hand-eye coordination before proceeding.</p>
+            
+            <button 
+              onClick={() => setShowMinigame(!showMinigame)}
+              className="px-8 py-3 border border-blue-500/30 text-blue-100 bg-blue-900/20 hover:bg-blue-800/40 rounded-full font-mono text-sm tracking-widest transition-all shadow-[0_0_20px_rgba(59,130,246,0.15)] active:scale-95"
+            >
+              {showMinigame ? "CLOSE MODULE" : "BOOT PROTOCOL"}
+            </button>
           </div>
-          <ReactionDotMinigame />
+          
+          {showMinigame && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8"
+            >
+              <ReactionDotMinigame />
+            </motion.div>
+          )}
         </section>
 
         <Footer />
