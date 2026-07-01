@@ -46,52 +46,52 @@ export default function ReactionDotMinigame() {
   }, [isActive, timeLeft, score, highScore]);
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col gap-6 bg-[#0a0a0a] border border-[#222222] rounded p-6 font-sans">
+    <div className="w-full max-w-3xl mx-auto flex flex-col gap-6 bg-[#0c0a1a] border border-purple-900/30 rounded-[40px] p-6 sm:p-8 font-sans shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
       
       {/* Header Dashboard */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-[#222222] pb-4 gap-4 sm:gap-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-purple-900/40 pb-4 gap-4 sm:gap-0">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-gray-500 font-mono uppercase tracking-[0.2em]">Reaction Matrix Module</span>
-          <span className="text-xl font-bold text-gray-100 font-mono">
-            {isActive ? "SYS_ACTIVE" : "SYS_IDLE"}
+          <span className="text-[10px] text-purple-300/70 font-mono uppercase tracking-[0.2em]">Starcatcher Module</span>
+          <span className="text-xl font-bold text-purple-100 font-mono">
+            {isActive ? "ACTIVE ✨" : "IDLE 🌙"}
           </span>
         </div>
         
         <div className="flex gap-8 font-mono">
           <div className="flex flex-col items-end">
-            <span className="text-[10px] text-gray-500 tracking-wider">T-MINUS</span>
+            <span className="text-[10px] text-purple-300/70 tracking-wider">T-MINUS</span>
             <span className="text-lg text-white">{timeLeft}s</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-[10px] text-gray-500 tracking-wider">SCORE</span>
+            <span className="text-[10px] text-purple-300/70 tracking-wider">STARS</span>
             <span className="text-lg text-white">{score}</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-[10px] text-gray-500 tracking-wider">HI-SCORE</span>
+            <span className="text-[10px] text-purple-300/70 tracking-wider">RECORD</span>
             <span className="text-lg text-white">{highScore}</span>
           </div>
         </div>
       </div>
 
       {/* Playable Area */}
-      <div className="relative w-full aspect-video sm:aspect-[21/9] bg-[#121212] border border-[#222222] rounded overflow-hidden select-none touch-none">
+      <div className="relative w-full aspect-video sm:aspect-[21/9] bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 border-2 border-purple-500/20 rounded-[32px] overflow-hidden select-none touch-none shadow-[inset_0_0_40px_rgba(0,0,0,0.5)]">
         
-        {/* Flat Grid Pattern */}
+        {/* Galaxy Star Pattern */}
         <div 
-          className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+          className="absolute inset-0 pointer-events-none opacity-40" 
           style={{ 
-            backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', 
-            backgroundSize: '40px 40px' 
+            backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.8) 1px, transparent 1px), radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.6) 1.5px, transparent 1.5px), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.5) 2px, transparent 2px)', 
+            backgroundSize: '100px 100px, 150px 150px, 200px 200px',
           }}
         />
 
         {!isActive && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
+          <div className="absolute inset-0 flex items-center justify-center bg-indigo-950/40 backdrop-blur-sm z-20">
             <button 
               onClick={startGame}
-              className="px-8 py-2 bg-white text-black font-mono font-bold text-xs tracking-widest uppercase hover:bg-gray-200 active:bg-gray-300 transition-colors"
+              className="px-8 py-3 bg-gradient-to-r from-purple-400 to-pink-400 text-white font-bold text-sm tracking-widest rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(232,121,249,0.5)]"
             >
-              {timeLeft === 0 ? "RESTART_SEQ" : "INITIATE"}
+              {timeLeft === 0 ? "Play Again ✨" : "Start Game 🚀"}
             </button>
           </div>
         )}
@@ -107,7 +107,7 @@ export default function ReactionDotMinigame() {
           >
             <div 
               onPointerDown={handleDotClick}
-              className="w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full cursor-crosshair hover:scale-110 active:scale-90 transition-transform"
+              className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-tr from-pink-300 to-purple-100 rounded-full cursor-crosshair hover:scale-110 active:scale-75 transition-transform shadow-[0_0_20px_rgba(244,114,182,0.8)]"
             />
           </div>
         )}
