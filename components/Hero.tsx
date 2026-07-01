@@ -103,7 +103,7 @@ export default function Hero() {
             onMouseDown={playClick}
             className="px-8 py-3.5 bg-transparent text-white text-sm font-bold rounded-full border border-white/20 hover:border-white transition-colors"
           >
-            GitHub Repository
+            GitHub Profile
           </a>
         </motion.div>
       </div>
